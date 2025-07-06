@@ -1,5 +1,7 @@
 package domain
 
+const StandardMonthlyHours = 160.0
+
 // MonthlyGrossSalary returns the total gross monthly salary
 func MonthlyGrossSalary(input PayrollInput) float64 {
 	total := input.BaseSalary + input.PersonalComplement
@@ -47,4 +49,39 @@ func AnnualPersonalComplement(input PayrollInput) float64 {
 // MonthlyPersonalComplement returns the monthly personal complement amount
 func MonthlyPersonalComplement(input PayrollInput) float64 {
 	return AnnualPersonalComplement(input) / 12
+}
+
+// ExtraHourRate returns the estimated hourly rate based on standard monthly hours.
+func ExtraHourRate(input PayrollInput) float64 {
+	hours := input.MonthlyHours
+	if hours == 0 {
+		hours = StandardMonthlyHours
+	}
+	return MonthlyGrossSalary(input) / hours
+}
+
+// ExtraHoursPay returns the total amount earned for extra hours worked
+func ExtraHoursPay(input PayrollInput) float64 {
+	if input.ExtraHourRate != 0 {
+		return float64(input.NumberOfExtraHours) * input.ExtraHourRate
+	} else {
+		extraHourRate := ExtraHourRate(input)
+		return float64(input.NumberOfExtraHours) * extraHourRate
+	}
+}
+
+// BCCC returns the Base de Cotización por Contingencias Comunes.
+// Includes base salary, complements, personal complement and prorated extra pay.
+// Does NOT include extra hours or exempt income.
+func BCCC(input PayrollInput) float64 {
+	base := MonthlyGrossSalary(input) + MonthlyProratedExtraPay(input)
+	return base
+}
+
+// BCCP returns the Base de Cotización por Contingencias Profesionales.
+// Includes everything from BCCC plus the total value of extra hours.
+func BCCP(input PayrollInput) float64 {
+	base := MonthlyGrossSalary(input) + MonthlyProratedExtraPay(input)
+	base += ExtraHoursPay(input)
+	return base
 }

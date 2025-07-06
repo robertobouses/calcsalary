@@ -7,7 +7,13 @@ type PayrollInput struct {
 	PersonalComplement    float64   // Extra personal bonus or allowance.
 	GrossSalary           float64   // Optional total gross salary (can be used for adjustments).
 	NumberOfExtraPayments int       // Number of extra payments per year (e.g. 2 for summer and Christmas).
-	NumberOfChildren      int       // Number of children
+
+	NumberOfExtraHours int     // Total number of extra hours worked in the month
+	ExtraHourRate      float64 // Pay per extra hour
+
+	MonthlyHours float64 // Default to 160 if 0
+
+	NumberOfChildren int // Number of children
 
 	// Disability related fields
 	HasDisability       bool // If the taxpayer has a disability
