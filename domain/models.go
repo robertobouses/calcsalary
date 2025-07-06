@@ -7,4 +7,14 @@ type PayrollInput struct {
 	PersonalComplement    float64   // Extra personal bonus or allowance.
 	GrossSalary           float64   // Optional total gross salary (can be used for adjustments).
 	NumberOfExtraPayments int       // Number of extra payments per year (e.g. 2 for summer and Christmas).
+	NumberOfChildren      int       // Number of children
+
+	// Disability related fields
+	HasDisability       bool // If the taxpayer has a disability
+	HasSevereDisability bool // Disability degree ≥ 65%
+	NeedsAssistance     bool // Needs help from third party
+
+	// Ascendants
+	HasAscendantsOver65   bool // Ascendants over 65 years old
+	HasDisabledAscendants bool // Disabled ascendants
 }
