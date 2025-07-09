@@ -2,9 +2,14 @@ package domain
 
 const StandardMonthlyHours = 160.0
 
-// MonthlyGrossSalary returns the total gross monthly salary
+// MonthlyGrossSalary returns the total gross monthly salary.
+// Uses input.PersonalComplement if > 0; otherwise calculates it.
 func MonthlyGrossSalary(input PayrollInput) float64 {
-	total := input.BaseSalary + input.PersonalComplement
+	personalComplement := input.PersonalComplement
+	if personalComplement == 0 {
+		personalComplement = MonthlyPersonalComplement(input)
+	}
+	total := input.BaseSalary + personalComplement
 	for _, c := range input.SalaryComplements {
 		total += c
 	}
