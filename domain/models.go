@@ -1,17 +1,18 @@
 package domain
 
 // PayrollInput represents the input data required to calculate payroll values.
+// All monetary values are expressed in cents (int).
 type PayrollInput struct {
-	BaseSalary            float64   // Monthly base salary.
-	SalaryComplements     []float64 // Additional taxable complements.
-	PersonalComplement    float64   // Extra personal bonus or allowance.
-	GrossSalary           float64   // Optional total gross salary (can be used for adjustments).
-	NumberOfExtraPayments int       // Number of extra payments per year (e.g. 2 for summer and Christmas).
+	BaseSalary            int   // Monthly base salary in cents
+	SalaryComplements     []int // Additional taxable complements in cents
+	PersonalComplement    int   // Extra personal bonus or allowance in cents
+	GrossSalary           int   // Optional total gross salary (in cents)
+	NumberOfExtraPayments int   // Number of extra payments per year (e.g. 2 for summer and Christmas)
 
-	NumberOfExtraHours int     // Total number of extra hours worked in the month
-	ExtraHourRate      float64 // Pay per extra hour
+	NumberOfExtraHours int // Total number of extra hours worked in the month
+	ExtraHourRate      int // Pay per extra hour in cents
 
-	MonthlyHours float64 // Default to 160 if 0
+	MonthlyHours int // Default to 160 if 0
 
 	NumberOfChildren int // Number of children
 

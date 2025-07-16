@@ -1,10 +1,10 @@
 package domain
 
-const StandardMonthlyHours = 160.0
+const StandardMonthlyHours = 160.0 // Default hours per month
 
-// MonthlyGrossSalary returns the total gross monthly salary.
+// MonthlyGrossSalary returns the total gross monthly salary in cents
 // Uses input.PersonalComplement if > 0; otherwise calculates it.
-func MonthlyGrossSalary(input PayrollInput) float64 {
+func MonthlyGrossSalary(input PayrollInput) int {
 	personalComplement := input.PersonalComplement
 	if personalComplement == 0 {
 		personalComplement = MonthlyPersonalComplement(input)
@@ -16,48 +16,48 @@ func MonthlyGrossSalary(input PayrollInput) float64 {
 	return total
 }
 
-// AnnualGrossSalary returns the total gross annual salary (12 months)
-func AnnualGrossSalary(input PayrollInput) float64 {
+// AnnualGrossSalary returns the total gross annual salary (12 months) in cents
+func AnnualGrossSalary(input PayrollInput) int {
 	return MonthlyGrossSalary(input) * 12
 }
 
-// MonthlyExtraPay returns the monthly amount of extra pay
-func MonthlyExtraPay(input PayrollInput) float64 {
+// MonthlyExtraPay returns the monthly amount of extra pay in cents
+func MonthlyExtraPay(input PayrollInput) int {
 	return MonthlyGrossSalary(input)
 }
 
-// AnnualExtraPay returns the total amount of extra pay per year
-func AnnualExtraPay(input PayrollInput) float64 {
-	return MonthlyExtraPay(input) * float64(input.NumberOfExtraPayments)
+// AnnualExtraPay returns the total amount of extra pay per year in cents
+func AnnualExtraPay(input PayrollInput) int {
+	return MonthlyExtraPay(input) * int(input.NumberOfExtraPayments)
 }
 
-// MonthlyProratedExtraPay returns the monthly prorated extra pay
-func MonthlyProratedExtraPay(input PayrollInput) float64 {
+// MonthlyProratedExtraPay returns the monthly prorated extra pay in cents
+func MonthlyProratedExtraPay(input PayrollInput) int {
 	return AnnualExtraPay(input) / 12
 }
 
-// MonthlyGrossSalaryWithExtras returns the gross monthly salary including extras
-func MonthlyGrossSalaryWithExtras(input PayrollInput) float64 {
+// MonthlyGrossSalaryWithExtras returns the gross monthly salary including extras in cents
+func MonthlyGrossSalaryWithExtras(input PayrollInput) int {
 	return MonthlyGrossSalary(input) + MonthlyExtraPay(input)
 }
 
-// AnnualGrossSalaryWithExtras returns the gross annual salary including extras
-func AnnualGrossSalaryWithExtras(input PayrollInput) float64 {
+// AnnualGrossSalaryWithExtras returns the gross annual salary including extras in cents
+func AnnualGrossSalaryWithExtras(input PayrollInput) int {
 	return AnnualGrossSalary(input) + AnnualExtraPay(input)
 }
 
-// AnnualPersonalComplement returns the annual personal complement amount
-func AnnualPersonalComplement(input PayrollInput) float64 {
+// AnnualPersonalComplement returns the annual personal complement amount in cents
+func AnnualPersonalComplement(input PayrollInput) int {
 	return input.GrossSalary - AnnualGrossSalaryWithExtras(input)
 }
 
-// MonthlyPersonalComplement returns the monthly personal complement amount
-func MonthlyPersonalComplement(input PayrollInput) float64 {
+// MonthlyPersonalComplement returns the monthly personal complement amount in cents
+func MonthlyPersonalComplement(input PayrollInput) int {
 	return AnnualPersonalComplement(input) / 12
 }
 
-// ExtraHourRate returns the estimated hourly rate based on standard monthly hours.
-func ExtraHourRate(input PayrollInput) float64 {
+// ExtraHourRate returns the estimated hourly rate based on standard monthly hours in cents
+func ExtraHourRate(input PayrollInput) int {
 	hours := input.MonthlyHours
 	if hours == 0 {
 		hours = StandardMonthlyHours
@@ -65,27 +65,27 @@ func ExtraHourRate(input PayrollInput) float64 {
 	return MonthlyGrossSalary(input) / hours
 }
 
-// ExtraHoursPay returns the total amount earned for extra hours worked
-func ExtraHoursPay(input PayrollInput) float64 {
+// ExtraHoursPay returns the total amount earned for extra hours worked in cents
+func ExtraHoursPay(input PayrollInput) int {
 	if input.ExtraHourRate != 0 {
-		return float64(input.NumberOfExtraHours) * input.ExtraHourRate
+		return int(input.NumberOfExtraHours) * input.ExtraHourRate
 	} else {
 		extraHourRate := ExtraHourRate(input)
-		return float64(input.NumberOfExtraHours) * extraHourRate
+		return int(input.NumberOfExtraHours) * extraHourRate
 	}
 }
 
-// BCCC returns the Base de Cotización por Contingencias Comunes.
+// BCCC returns the Base de Cotización por Contingencias Comunes in cents.
 // Includes base salary, complements, personal complement and prorated extra pay.
 // Does NOT include extra hours or exempt income.
-func BCCC(input PayrollInput) float64 {
+func BCCC(input PayrollInput) int {
 	base := MonthlyGrossSalary(input) + MonthlyProratedExtraPay(input)
 	return base
 }
 
-// BCCP returns the Base de Cotización por Contingencias Profesionales.
+// BCCP returns the Base de Cotización por Contingencias Profesionales in cents.
 // Includes everything from BCCC plus the total value of extra hours.
-func BCCP(input PayrollInput) float64 {
+func BCCP(input PayrollInput) int {
 	base := MonthlyGrossSalary(input) + MonthlyProratedExtraPay(input)
 	base += ExtraHoursPay(input)
 	return base

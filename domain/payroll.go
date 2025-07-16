@@ -1,41 +1,42 @@
 package domain
 
 // PayrollOutput contains the detailed components of a payroll calculation.
+// All monetary values are expressed in cents (int).
 type PayrollOutput struct {
-	// Gross salary components
-	BaseSalary             float64   // Monthly base salary
-	PersonalComplement     float64   // Personal complement or allowance
-	SalaryComplements      []float64 // Other salary complements
-	ExtraHoursPay          float64   // Total pay for extra hours worked
-	MonthlyGrossWithExtras float64   // Total gross monthly salary including extras and extra hours
+	// Gross salary components (in cents)
+	BaseSalary             int   // Monthly base salary
+	PersonalComplement     int   // Personal complement or allowance
+	SalaryComplements      []int // Other salary complements
+	ExtraHoursPay          int   // Total pay for extra hours worked
+	MonthlyGrossWithExtras int   // Total gross monthly salary including extras and extra hours
 
-	// Social Security contribution bases
-	BaseBCCC float64 // Contribution base for common contingencies
-	BaseBCCP float64 // Contribution base for professional contingencies
+	// Social Security contribution bases (in cents)
+	BaseBCCC int // Contribution base for common contingencies
+	BaseBCCP int // Contribution base for professional contingencies
 
 	// Income tax (IRPF)
-	IrpfAmount        float64 // Monthly IRPF withholding amount
-	IrpfEffectiveRate float64 // Effective IRPF tax rate
+	IrpfAmount        int // Monthly IRPF withholding amount in cents
+	IrpfEffectiveRate int // Effective IRPF tax rate (basis points, per 10,000)
 
 	// Social Security contributions breakdown (worker and employer)
 	SSContributions SSCotisations
 
-	// Net salary after deductions
-	NetSalary float64 // Net monthly salary payable to the employee
+	// Net salary after deductions (in cents)
+	NetSalary int
 }
 
 // GeneratePayrollOutput calculates and returns all payroll parts based on the input data.
 func GeneratePayrollOutput(input PayrollInput) PayrollOutput {
 	ss := CalculateSSCotisations(input)
-	gross := MonthlyGrossSalary(input)
-	extras := MonthlyProratedExtraPay(input)
-	extraHours := ExtraHoursPay(input)
+	gross := MonthlyGrossSalary(input)       // in cents
+	extras := MonthlyProratedExtraPay(input) // in cents
+	extraHours := ExtraHoursPay(input)       // in cents
 
-	bccc := BCCC(input)
-	bccp := BCCP(input)
+	bccc := BCCC(input) // in cents
+	bccp := BCCP(input) // in cents
 
-	irpfAnnual, irpfRate := AnnualIrpf(input)
-	irpfMonthly := irpfAnnual / 12
+	irpfAnnual, irpfRate := AnnualIrpf(input) // irpfAnnual in cents, rate in basis points
+	irpfMonthly := irpfAnnual / 12            // monthly IRPF in cents
 
 	net := gross + extras + extraHours - irpfMonthly - ss.TotalWorker
 
