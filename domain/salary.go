@@ -5,6 +5,9 @@ const StandardMonthlyHours = 160.0 // Default hours per month
 // MonthlyGrossSalary returns the total gross monthly salary in cents
 // Uses input.PersonalComplement if > 0; otherwise calculates it.
 func MonthlyGrossSalary(input PayrollInput) int {
+	if input.BaseSalary <= 0 {
+		return 0
+	}
 	personalComplement := input.PersonalComplement
 	if personalComplement == 0 {
 		personalComplement = MonthlyPersonalComplement(input)
@@ -48,11 +51,17 @@ func AnnualGrossSalaryWithExtras(input PayrollInput) int {
 
 // AnnualPersonalComplement returns the annual personal complement amount in cents
 func AnnualPersonalComplement(input PayrollInput) int {
+	if input.BaseSalary <= 0 || input.GrossSalary <= 0 {
+		return 0
+	}
 	return input.GrossSalary - AnnualGrossSalaryWithExtras(input)
 }
 
 // MonthlyPersonalComplement returns the monthly personal complement amount in cents
 func MonthlyPersonalComplement(input PayrollInput) int {
+	if input.BaseSalary <= 0 || input.GrossSalary <= 0 {
+		return 0
+	}
 	return AnnualPersonalComplement(input) / 12
 }
 
