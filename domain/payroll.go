@@ -5,8 +5,8 @@ package domain
 type PayrollOutput struct {
 	// Gross salary components (in cents)
 	BaseSalary             int   // Monthly base salary
-	PersonalComplement     int   // Personal complement or allowance
 	SalaryComplements      []int // Other salary complements
+	PersonalComplement     int   // Personal complement or allowance
 	ExtraHoursPay          int   // Total pay for extra hours worked
 	MonthlyGrossWithExtras int   // Total gross monthly salary including extras and extra hours
 
@@ -42,8 +42,8 @@ func GeneratePayrollOutput(input PayrollInput) PayrollOutput {
 
 	return PayrollOutput{
 		BaseSalary:             input.BaseSalary,
-		PersonalComplement:     input.PersonalComplement,
 		SalaryComplements:      input.SalaryComplements,
+		PersonalComplement:     input.PersonalComplement,
 		ExtraHoursPay:          extraHours,
 		MonthlyGrossWithExtras: gross + extras + extraHours,
 
