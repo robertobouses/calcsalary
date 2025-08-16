@@ -26,27 +26,27 @@ func AnnualGrossSalary(input PayrollInput) int {
 
 // MonthlyExtraPay returns the monthly amount of extra pay in cents
 func MonthlyExtraPay(input PayrollInput) int {
-	return MonthlyGrossSalary(input)
+	return MonthlyGrossSalary(input) - MonthlyPersonalComplement(input)
 }
 
-// AnnualExtraPay returns the total amount of extra pay per year in cents
-func AnnualExtraPay(input PayrollInput) int {
+// AnnualExtraPayments returns the total amount of extra pay per year in cents
+func AnnualExtraPayments(input PayrollInput) int {
 	return MonthlyExtraPay(input) * int(input.NumberOfExtraPayments)
 }
 
 // MonthlyProratedExtraPay returns the monthly prorated extra pay in cents
 func MonthlyProratedExtraPay(input PayrollInput) int {
-	return AnnualExtraPay(input) / 12
+	return AnnualExtraPayments(input) / 12
 }
 
-// MonthlyGrossSalaryWithExtras returns the gross monthly salary including extras in cents
-func MonthlyGrossSalaryWithExtras(input PayrollInput) int {
+// MonthlyGrossSalaryWithExtra returns the gross monthly salary including extras in cents
+func MonthlyGrossSalaryWithExtra(input PayrollInput) int {
 	return MonthlyGrossSalary(input) + MonthlyExtraPay(input)
 }
 
 // AnnualGrossSalaryWithExtras returns the gross annual salary including extras in cents
 func AnnualGrossSalaryWithExtras(input PayrollInput) int {
-	return AnnualGrossSalary(input) + AnnualExtraPay(input)
+	return AnnualGrossSalary(input) + AnnualExtraPayments(input)
 }
 
 // AnnualPersonalComplement returns the annual personal complement amount in cents
