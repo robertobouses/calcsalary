@@ -54,7 +54,18 @@ func AnnualPersonalComplement(input PayrollInput) int {
 	if input.BaseSalary <= 0 || input.GrossSalary <= 0 {
 		return 0
 	}
-	return input.GrossSalary - AnnualGrossSalaryWithExtras(input)
+
+	knownAnnual := (input.BaseSalary * 12)
+	for _, c := range input.SalaryComplements {
+		knownAnnual += c * 12
+	}
+	knownAnnual += AnnualExtraPayments(input)
+
+	diff := input.GrossSalary - knownAnnual
+	if diff < 0 {
+		return 0
+	}
+	return diff
 }
 
 // MonthlyPersonalComplement returns the monthly personal complement amount in cents
