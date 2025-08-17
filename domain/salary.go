@@ -30,24 +30,37 @@ func AnnualGrossSalary(input PayrollInput) int {
 	return MonthlyGrossSalary(input) * 12
 }
 
-// MonthlyExtraPay returns the monthly amount of extra pay in cents
-func MonthlyExtraPay(input PayrollInput) int {
-	return MonthlyGrossSalary(input) - MonthlyPersonalComplement(input)
-}
-
 // AnnualExtraPayments returns the total amount of extra pay per year in cents
 func AnnualExtraPayments(input PayrollInput) int {
-	return MonthlyExtraPay(input) * int(input.NumberOfExtraPayments)
+	if input.NumberOfExtraPayments <= 0 {
+		return 0
+	}
+	monthlyExtra := 0
+	if input.PersonalComplement == 0 && input.GrossSalary > 0 {
+		annualWithExtras := input.BaseSalary * input.NumberOfExtraPayments
+		for _, c := range input.SalaryComplements {
+			annualWithExtras += c * 12
+		}
+		monthlyExtra = (input.GrossSalary - annualWithExtras) / 12
+	}
+	total := monthlyExtra
+	for _, c := range input.SalaryComplements {
+		total += c
+	}
+	return total * int(input.NumberOfExtraPayments)
 }
 
 // MonthlyProratedExtraPay returns the monthly prorated extra pay in cents
 func MonthlyProratedExtraPay(input PayrollInput) int {
+	if input.NumberOfExtraPayments <= 0 {
+		return 0
+	}
 	return AnnualExtraPayments(input) / 12
 }
 
 // MonthlyGrossSalaryWithExtra returns the gross monthly salary including extras in cents
 func MonthlyGrossSalaryWithExtra(input PayrollInput) int {
-	return MonthlyGrossSalary(input) + MonthlyExtraPay(input)
+	return MonthlyGrossSalary(input) + MonthlyProratedExtraPay(input)
 }
 
 // AnnualGrossSalaryWithExtras returns the gross annual salary including extras in cents
@@ -57,16 +70,17 @@ func AnnualGrossSalaryWithExtras(input PayrollInput) int {
 
 // AnnualPersonalComplement returns the annual personal complement amount in cents
 func AnnualPersonalComplement(input PayrollInput) int {
-	if input.BaseSalary <= 0 || input.GrossSalary <= 0 {
+	if input.PersonalComplement > 0 {
+		return input.PersonalComplement * 12
+	}
+	if input.GrossSalary <= 0 || input.BaseSalary <= 0 {
 		return 0
 	}
 
-	knownAnnual := (input.BaseSalary * 12)
+	knownAnnual := input.BaseSalary*12 + len(input.SalaryComplements)*12
 	for _, c := range input.SalaryComplements {
 		knownAnnual += c * 12
 	}
-	knownAnnual += AnnualExtraPayments(input)
-
 	diff := input.GrossSalary - knownAnnual
 	if diff < 0 {
 		return 0
