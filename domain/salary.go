@@ -2,29 +2,37 @@ package domain
 
 const StandardMonthlyHours = 160.0 // Default hours per month
 
-// MonthlyGrossSalary returns the total gross monthly salary in cents
-// Uses input.PersonalComplement if > 0; otherwise calculates it.
-func MonthlyGrossSalary(input PayrollInput) int {
-	if input.BaseSalary <= 0 {
+// AnnualPersonalComplement returns the annual personal complement amount in cents
+func AnnualPersonalComplement(input PayrollInput) int {
+	if input.GrossSalary <= 0 || input.BaseSalary <= 0 {
 		return 0
 	}
-
-	personalComplement := input.PersonalComplement
-	if personalComplement == 0 && input.GrossSalary > 0 {
-		annualBase := input.BaseSalary * 12
-		for _, c := range input.SalaryComplements {
-			annualBase += c * 12
-		}
-		diff := input.GrossSalary - annualBase
-		if diff > 0 {
-			personalComplement = diff / 12
-		}
+	var total int
+	for _, value := range input.SalaryComplements {
+		total += value
 	}
+	total += input.BaseSalary
+	total += total * input.NumberOfExtraPayments
+	return input.GrossSalary - total
+}
 
-	total := input.BaseSalary + personalComplement
-	for _, c := range input.SalaryComplements {
-		total += c
+// MonthlyPersonalComplement returns the monthly personal complement amount in cents
+func MonthlyPersonalComplement(input PayrollInput) int {
+	if input.BaseSalary <= 0 || input.GrossSalary <= 0 {
+		return 0
 	}
+	return AnnualPersonalComplement(input) / 12
+}
+
+// MonthlyGrossSalary returns the total gross monthly salary in cents
+func MonthlyGrossSalary(input PayrollInput) int {
+	var total int
+	for _, value := range input.SalaryComplements {
+		total += value
+	}
+	total += input.BaseSalary
+	total += MonthlyPersonalComplement(input)
+
 	return total
 }
 
@@ -38,22 +46,12 @@ func AnnualExtraPayments(input PayrollInput) int {
 	if input.NumberOfExtraPayments <= 0 {
 		return 0
 	}
-	monthlyExtra := 0
-	if input.PersonalComplement == 0 && input.GrossSalary > 0 {
-		annualWithExtras := input.BaseSalary * input.NumberOfExtraPayments
-		for _, c := range input.SalaryComplements {
-			annualWithExtras += c * 12
-		}
-		diff := input.GrossSalary - annualWithExtras
-		if diff > 0 {
-			monthlyExtra = diff / 12
-		}
+	var total int
+	for _, value := range input.SalaryComplements {
+		total += value
 	}
-	total := monthlyExtra
-	for _, c := range input.SalaryComplements {
-		total += c
-	}
-	return total * int(input.NumberOfExtraPayments)
+	total += input.BaseSalary
+	return total * input.NumberOfExtraPayments
 }
 
 // MonthlyProratedExtraPay returns the monthly prorated extra pay in cents
@@ -72,34 +70,6 @@ func MonthlyGrossSalaryWithExtra(input PayrollInput) int {
 // AnnualGrossSalaryWithExtras returns the gross annual salary including extras in cents
 func AnnualGrossSalaryWithExtras(input PayrollInput) int {
 	return AnnualGrossSalary(input) + AnnualExtraPayments(input)
-}
-
-// AnnualPersonalComplement returns the annual personal complement amount in cents
-func AnnualPersonalComplement(input PayrollInput) int {
-	if input.PersonalComplement > 0 {
-		return input.PersonalComplement * 12
-	}
-	if input.GrossSalary <= 0 || input.BaseSalary <= 0 {
-		return 0
-	}
-
-	knownAnnual := input.BaseSalary*12 + len(input.SalaryComplements)*12
-	for _, c := range input.SalaryComplements {
-		knownAnnual += c * 12
-	}
-	diff := input.GrossSalary - knownAnnual
-	if diff < 0 {
-		return 0
-	}
-	return diff
-}
-
-// MonthlyPersonalComplement returns the monthly personal complement amount in cents
-func MonthlyPersonalComplement(input PayrollInput) int {
-	if input.BaseSalary <= 0 || input.GrossSalary <= 0 {
-		return 0
-	}
-	return AnnualPersonalComplement(input) / 12
 }
 
 // ExtraHourRate returns the estimated hourly rate based on standard monthly hours in cents
