@@ -5,17 +5,20 @@ const StandardMonthlyHours = 160.0 // Default hours per month
 // MonthlyGrossSalary returns the total gross monthly salary in cents
 // Uses input.PersonalComplement if > 0; otherwise calculates it.
 func MonthlyGrossSalary(input PayrollInput) int {
-	if input.BaseSalary <= 0 || input.GrossSalary <= 0 {
+	if input.BaseSalary <= 0 {
 		return 0
 	}
 
 	personalComplement := input.PersonalComplement
-	if personalComplement == 0 {
-		annualWithExtras := (input.BaseSalary * input.NumberOfExtraPayments)
+	if personalComplement == 0 && input.GrossSalary > 0 {
+		annualBase := input.BaseSalary * 12
 		for _, c := range input.SalaryComplements {
-			annualWithExtras += c * 12
+			annualBase += c * 12
 		}
-		personalComplement = (input.GrossSalary - annualWithExtras) / 12
+		diff := input.GrossSalary - annualBase
+		if diff > 0 {
+			personalComplement = diff / 12
+		}
 	}
 
 	total := input.BaseSalary + personalComplement
@@ -41,7 +44,10 @@ func AnnualExtraPayments(input PayrollInput) int {
 		for _, c := range input.SalaryComplements {
 			annualWithExtras += c * 12
 		}
-		monthlyExtra = (input.GrossSalary - annualWithExtras) / 12
+		diff := input.GrossSalary - annualWithExtras
+		if diff > 0 {
+			monthlyExtra = diff / 12
+		}
 	}
 	total := monthlyExtra
 	for _, c := range input.SalaryComplements {
@@ -107,12 +113,11 @@ func ExtraHourRate(input PayrollInput) int {
 
 // ExtraHoursPay returns the total amount earned for extra hours worked in cents
 func ExtraHoursPay(input PayrollInput) int {
-	if input.ExtraHourRate != 0 {
-		return int(input.NumberOfExtraHours) * input.ExtraHourRate
-	} else {
-		extraHourRate := ExtraHourRate(input)
-		return int(input.NumberOfExtraHours) * extraHourRate
+	rate := input.ExtraHourRate
+	if rate == 0 {
+		rate = ExtraHourRate(input)
 	}
+	return int(input.NumberOfExtraHours) * rate
 }
 
 // BCCC returns the Base de Cotización por Contingencias Comunes in cents.
@@ -126,7 +131,5 @@ func BCCC(input PayrollInput) int {
 // BCCP returns the Base de Cotización por Contingencias Profesionales in cents.
 // Includes everything from BCCC plus the total value of extra hours.
 func BCCP(input PayrollInput) int {
-	base := MonthlyGrossSalary(input) + MonthlyProratedExtraPay(input)
-	base += ExtraHoursPay(input)
-	return base
+	return BCCC(input) + ExtraHoursPay(input)
 }
