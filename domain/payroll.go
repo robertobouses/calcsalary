@@ -43,7 +43,7 @@ func GeneratePayrollOutput(input PayrollInput) PayrollOutput {
 	return PayrollOutput{
 		BaseSalary:             input.BaseSalary,
 		SalaryComplements:      input.SalaryComplements,
-		PersonalComplement:     input.PersonalComplement,
+		PersonalComplement:     MonthlyPersonalComplement(input),
 		ExtraHoursPay:          extraHours,
 		MonthlyGrossWithExtras: gross + extras + extraHours,
 
